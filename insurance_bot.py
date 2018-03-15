@@ -1,7 +1,6 @@
 from wsgiref.simple_server import make_server
 from pyramid.config import Configurator
 from pyramid.response import Response
-
 from root import insurance
 
 client = insurance.Client()
@@ -9,8 +8,8 @@ client = insurance.Client()
 
 def get_phone_brands(request):
     phone_brands = client.gadgets.list_phone_brands()
-    print(phone_brands)
-    return Response(phone_brands)
+    return Response(body=' '.join(phone_brands))
+
 
 if __name__ == '__main__':
     with Configurator() as config:
