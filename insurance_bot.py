@@ -3,13 +3,15 @@ from pyramid.config import Configurator
 from pyramid.response import Response
 from root import insurance
 from os import environ as env
+import json
 
 client = insurance.Client()
 
 
 def get_phone_brands(request):
     phone_brands = client.gadgets.list_phone_brands()
-    return Response(body=' '.join(phone_brands))
+    phone_brands = {brand: brand for brand in phone_brands}
+    return Response(body=json.dumps(phone_brands))
 
 
 def hello_world(request):
