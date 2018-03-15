@@ -7,6 +7,21 @@ import json
 
 client = insurance.Client()
 
+policy_holder = {
+            "id":            {"number": "6801015800084", "type": "id", "country": "ZA"},
+            "first_name":    "John",
+            "last_name":     "Smith",
+            "date_of_birth": "19950101",
+            "email":         "john.smith@root.co.za",
+            "cellphone":     {"country": "ZA", "number": "0718822882"}
+}
+
+application = {
+            "quote_package_id": "2c9a2297-5532-4f35-bbd1-48762934602f",
+            "monthly_premium":  12340,
+            "serial_number":    "1234567789"
+}
+
 
 def get_phone_brands(request):
     phone_brands = client.gadgets.list_phone_brands()
@@ -21,18 +36,43 @@ def response_object(speech):
     return Response(body=json.dumps(resp))
 
 
-def check_phone_brand(request):
-    phone_brands = client.gadgets.list_phone_brands()
-    return response_object(' '.join(phone_brands))
+def get_quote(request):
+    # create quote
+    quote = client.quotes.create({"type": "root_gadgets", "model_name": "iPhone 5s"})
+    quote_id = quote[0].get("quote_package_id")
+    result_string = quote.get("status")
+    return response_object(result_string)
+
+
+def create_policy(request):
+
+    # create polocy holder
+    policyholder = client.policyholders.create(policy_holder.get("id"), policy_holder.get("first_name"),
+                                               policy_holder.get("last_name"), policy_holder.get("email"),
+                                               policy_holder.get("date_of_birth"), policy_holder.get("cellphone"))
+
+    # create application
+    result = client.applications.create(policyholder.get("policyholder_id"), application.get("quote_package_id"),
+                                        application.get("monthly_premium"), application.get("serial_number"))
+
+    # issue policy
+    issued_policy = client.policies.issue(result.get("application_id"))
+
+    print(issued_policy)
+    result_string = issued_policy.get("status")
+    return response_object(result_string)
 
 
 def compute_base_request(request):
-    print(request.json_body.get('result').get('metadata').get('intentName'))
-    intent = request.json_body.get('result', {}).get('metadata', {}).get('intentName')
-    if intent == 'phone_brand':
-        get_phone_brands(request)
-    else:
-        response_object('No intent given')
+    if 'application/json' in request.headers["Content-Type"]:
+        intent = request.json_body.get('result', {}).get('metadata', {}).get('intentName')
+        if intent == 'phone_brand':
+            return get_phone_brands(request)
+        elif intent == 'create_policy':
+            return create_policy(request)
+        else:
+            return response_object('No intent given')
+    return response_object('No body present')
 
 if __name__ == '__main__':
     with Configurator() as config:
