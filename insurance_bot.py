@@ -39,7 +39,8 @@ def response_object(speech, context=[]):
 
 def get_quote(request):
     # create quote
-    quotes = client.quotes.create({"type": "root_gadgets", "model_name": "iPhone 5s"})
+    model_name = request.json_body.get('result', {})[0].get('parameters', {}).get('model_name')
+    quotes = client.quotes.create({"type": "root_gadgets", "model_name": model_name})
     quote_ids = [{"quote_id": quote.get("quote_package_id")} for quote in quotes]
 
     quote_vars = [{"name": quote.get("package_name"), "premium": quote.get("suggested_premium")/100} for quote in quotes]
@@ -51,7 +52,7 @@ def get_quote(request):
 
 def create_policy(request):
 
-    quote_id = request.json_body.get('contexts', [])[0].get('parameters', [])
+    quote_ids = request.json_body.get('contexts', [])[0].get('parameters', [])
 
     # create polocy holder
     policyholder = client.policyholders.create(policy_holder.get("id"), policy_holder.get("first_name"),
@@ -85,9 +86,6 @@ def compute_base_request(request):
 
 if __name__ == '__main__':
     with Configurator() as config:
-        config.add_route('phone_brands', '/phone_brands')
-        config.add_view(get_phone_brands, route_name='phone_brands')
-
         config.add_route('base_request', '/')
         config.add_view(compute_base_request, route_name='base_request')
 
