@@ -28,11 +28,15 @@ def get_phone_brands(request):
     return response_object(' '.join(phone_brands))
 
 
-def response_object(speech, context=[]):
-    resp = {
+def response_object(speech, context={}):
+    new_resp = {
+        "contextOut": [{
+            "name": "quote_ids",
+            "lifespan": 1,
+            "parameters": context,
+        }],
         "speech": speech,
         "displayText": "This text probably won't appear anywhere",
-        "context": context
     }
     return Response(body=json.dumps(resp))
 
@@ -47,7 +51,7 @@ def get_quote(request):
     result_string = "You have a couple of options:\n %s" \
                     % "\n".join(["%(name)s: R%(premium)s" % data for data in quote_vars])
 
-    return response_object(result_string, quote_ids)
+    return response_object(result_string, {"quote_ids": quote_ids})
 
 
 def create_policy(request):
@@ -72,6 +76,7 @@ def create_policy(request):
 
 
 def compute_base_request(request):
+    print(request.json_body)
     if 'application/json' in request.headers["Content-Type"]:
         intent = request.json_body.get('result', {}).get('metadata', {}).get('intentName')
         if intent == 'phone_brand':
