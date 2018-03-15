@@ -39,7 +39,7 @@ def response_object(speech, context=[]):
 
 def get_quote(request):
     # create quote
-    model_name = request.json_body.get('result', {})[0].get('parameters', {}).get('model_name')
+    model_name = request.json_body.get('result', {}).get('parameters', {}).get('model_name')
     quotes = client.quotes.create({"type": "root_gadgets", "model_name": model_name})
     quote_ids = [{"quote_id": quote.get("quote_package_id")} for quote in quotes]
 
