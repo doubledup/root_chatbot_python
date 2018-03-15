@@ -10,9 +10,9 @@ client = insurance.Client()
 
 def get_phone_brands(request):
     phone_brands = client.gadgets.list_phone_brands()
-    phone_brands = {brand: brand for brand in phone_brands}
+    phone_brands_hash = {brand: brand for brand in phone_brands}
     resp = {
-        "speech": phone_brands,
+        "speech": ' '.join(phone_brands),
         "displayText": "This text probably won't appear anywhere",
     }
     return Response(body=json.dumps(resp))
