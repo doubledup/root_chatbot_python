@@ -26,7 +26,8 @@ if __name__ == '__main__':
         config.add_view(hello_world, route_name='hello_world')
 
         app = config.make_wsgi_app()
-    port = int(env.get('PORT'))
+    port = env.get('PORT')
+    port = int(port) if port else False
     server = make_server('0.0.0.0', (port if port else 8080), app)
     print('Server Started')
     server.serve_forever()
