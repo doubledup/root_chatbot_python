@@ -28,23 +28,30 @@ def get_phone_brands(request):
     return response_object(' '.join(phone_brands))
 
 
-def response_object(speech):
+def response_object(speech, context=[]):
     resp = {
         "speech": speech,
         "displayText": "This text probably won't appear anywhere",
+        "context": context
     }
     return Response(body=json.dumps(resp))
 
 
 def get_quote(request):
     # create quote
-    quote = client.quotes.create({"type": "root_gadgets", "model_name": "iPhone 5s"})
-    quote_id = quote[0].get("quote_package_id")
-    result_string = quote.get("status")
-    return response_object(result_string)
+    quotes = client.quotes.create({"type": "root_gadgets", "model_name": "iPhone 5s"})
+    quote_ids = [{"quote_id": quote.get("quote_package_id")} for quote in quotes]
+
+    quote_vars = [{"name": quote.get("package_name"), "premium": quote.get("suggested_premium")/100} for quote in quotes]
+    result_string = "You have a couple of options:\n %s" \
+                    % "\n".join(["%(name)s: R%(premium)s" % data for data in quote_vars])
+
+    return response_object(result_string, quote_ids)
 
 
 def create_policy(request):
+
+    quote_id = request.json_body.get('contexts', [])[0].get('parameters', [])
 
     # create polocy holder
     policyholder = client.policyholders.create(policy_holder.get("id"), policy_holder.get("first_name"),
@@ -52,7 +59,7 @@ def create_policy(request):
                                                policy_holder.get("date_of_birth"), policy_holder.get("cellphone"))
 
     # create application
-    result = client.applications.create(policyholder.get("policyholder_id"), application.get("quote_package_id"),
+    result = client.applications.create(policyholder.get("policyholder_id"), quote_id,
                                         application.get("monthly_premium"), application.get("serial_number"))
 
     # issue policy
@@ -70,6 +77,8 @@ def compute_base_request(request):
             return get_phone_brands(request)
         elif intent == 'create_policy':
             return create_policy(request)
+        elif intent == 'get_quote':
+            return get_quote(request)
         else:
             return response_object('No intent given')
     return response_object('No body present')
