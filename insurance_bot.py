@@ -19,7 +19,7 @@ if __name__ == '__main__':
         config.add_route('phone_brands', '/phone_brands')
         config.add_view(get_phone_brands, route_name='phone_brands')
 
-        config.add_route('hello_world', '/hello_world')
+        config.add_route('hello_world', '/')
         config.add_view(hello_world, route_name='hello_world')
 
         app = config.make_wsgi_app()
