@@ -75,7 +75,7 @@ def create_policy(request):
     return response_object(result_string)
 
 
-def compute_base_request(request):
+def compute_dialogflow_request(request):
     print(request.json_body)
     if 'application/json' in request.headers["Content-Type"]:
         intent = request.json_body.get('result', {}).get('metadata', {}).get('intentName')
@@ -91,8 +91,8 @@ def compute_base_request(request):
 
 if __name__ == '__main__':
     with Configurator() as config:
-        config.add_route('base_request', '/')
-        config.add_view(compute_base_request, route_name='base_request')
+        config.add_route('dialogflow', '/dialogflow')
+        config.add_view(compute_dialogflow_request, route_name='dialogflow')
 
         app = config.make_wsgi_app()
     port = env.get('PORT')
