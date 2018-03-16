@@ -38,7 +38,7 @@ def response_object(speech, context={}):
         "speech": speech,
         "displayText": "This text probably won't appear anywhere",
     }
-    return Response(body=json.dumps(resp))
+    return Response(body=json.dumps(new_resp))
 
 
 def get_quote(request):
